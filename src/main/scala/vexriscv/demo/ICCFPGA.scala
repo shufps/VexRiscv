@@ -73,6 +73,7 @@ object ICCFPGAConfig{
             catchAccessError  = true,
             catchIllegal      = true,
             catchUnaligned    = true
+//            memAsBlackBox     = true
           ),
           memoryTranslatorPortConfig = null
           //            memoryTranslatorPortConfig = MemoryTranslatorPortConfig(

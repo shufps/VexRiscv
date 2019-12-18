@@ -24,7 +24,8 @@ case class DataCacheConfig(cacheSize : Int,
                            earlyDataMux : Boolean = false,
                            tagSizeShift : Int = 0, //Used to force infering ram
                            withLrSc : Boolean = false,
-                           withAmo : Boolean = false){
+                           withAmo : Boolean = false,
+                           memAsBlackBox : Boolean = false){
 
   assert(!(earlyDataMux && !earlyWaysHits))
   def burstSize = bytePerLine*8/memDataWidth
@@ -394,6 +395,11 @@ class DataCache(p : DataCacheConfig) extends Component{
   val ways = for(i <- 0 until wayCount) yield new Area{
     val tags = Mem(new LineInfo(), wayLineCount)
     val data = Mem(Bits(wordWidth bit), wayWordCount)
+
+    if (p.memAsBlackBox) {
+      tags.generateAsBlackBox()
+      data.generateAsBlackBox()
+    }
 
     //Reads
     val tagsReadRsp = tags.readSync(tagsReadCmd.payload, tagsReadCmd.valid && !io.cpu.memory.isStuck)
