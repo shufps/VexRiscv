@@ -128,15 +128,24 @@ object ICCFPGAConfig{
             misaAccess     = CsrAccess.NONE,
             mtvecAccess    = CsrAccess.NONE,
             mtvecInit      = 0x00000020l,
+//            stvecInit      = 0x00000140l,
             mepcAccess     = CsrAccess.READ_WRITE,
-            mscratchGen    = false,
+            mscratchGen    = true,
             mcauseAccess   = CsrAccess.READ_ONLY,
             mbadaddrAccess = CsrAccess.READ_ONLY,
             mcycleAccess   = CsrAccess.NONE,
             minstretAccess = CsrAccess.NONE,
-            ecallGen       = false,
-            wfiGenAsWait         = false,
-            ucycleAccess   = CsrAccess.NONE
+            ecallGen       = true,
+            wfiGenAsWait   = false,
+            ucycleAccess   = CsrAccess.NONE,
+            userGen        = true,
+            supervisorGen  = true,
+            stvecAccess         = CsrAccess.READ_WRITE,
+            sepcAccess          = CsrAccess.READ_WRITE,
+            scauseAccess        = CsrAccess.READ_WRITE,
+            sbadaddrAccess      = CsrAccess.READ_WRITE,
+            medelegAccess       = CsrAccess.WRITE_ONLY,
+            midelegAccess       = CsrAccess.WRITE_ONLY
           )
         ),
         new YamlPlugin("cpu0.yaml")
@@ -179,6 +188,7 @@ class ICCFPGA(config: ICCFPGAConfig) extends Component{
     val timerInterrupt = in Bool
     val timerExternal = in(PinsecTimerCtrlExternal())
     val coreInterrupt = in Bool
+    val coreInterruptS = in Bool
   }
 
   val resetCtrlClockDomain = ClockDomain(
@@ -245,6 +255,9 @@ class ICCFPGA(config: ICCFPGAConfig) extends Component{
     ram.ram.generateAsBlackBox()
     rom.ram.generateAsBlackBox()
 
+    ram.ram.userLabel = "ram"
+    rom.ram.userLabel = "rom"
+
     val apbBridge = Axi4SharedToApb3Bridge(
       addressWidth = 20,
       dataWidth    = 32,
@@ -269,6 +282,7 @@ class ICCFPGA(config: ICCFPGAConfig) extends Component{
         case plugin : DBusCachedPlugin => dBus = plugin.dBus.toAxi4Shared(true)
         case plugin : CsrPlugin        => {
           plugin.externalInterrupt := BufferCC(io.coreInterrupt)
+          plugin.externalInterruptS := BufferCC(io.coreInterruptS)
           plugin.timerInterrupt := BufferCC(io.timerInterrupt) //timerCtrl.io.interrupt
         }
         case plugin : DebugPlugin      => debugClockDomain{

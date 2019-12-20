@@ -32,13 +32,13 @@ class MemoryProtectionUnitPlugin(ioRange : UInt => Bool, romRange : UInt => Bool
         port.bus.rsp.physicalAddress := port.bus.cmd.virtualAddress
 
         when(supervisorRange(port.bus.rsp.physicalAddress)) {
-          port.bus.rsp.allowRead := !privilegeService.isUser()
-          port.bus.rsp.allowWrite := !privilegeService.isUser()
-          port.bus.rsp.allowExecute := !privilegeService.isUser()
+          port.bus.rsp.allowRead := privilegeService.isMachine() || privilegeService.isSupervisor()
+          port.bus.rsp.allowWrite := privilegeService.isMachine() || privilegeService.isSupervisor()
+          port.bus.rsp.allowExecute := False
         } otherwise {
           port.bus.rsp.allowRead := True
           // last term for debugging upload
-          port.bus.rsp.allowWrite := !romRange(port.bus.rsp.physicalAddress) || !privilegeService.isUser()
+          port.bus.rsp.allowWrite := !romRange(port.bus.rsp.physicalAddress) || privilegeService.isMachine()
           port.bus.rsp.allowExecute := romRange(port.bus.rsp.physicalAddress) 
         }
         port.bus.rsp.isIoAccess := ioRange(port.bus.rsp.physicalAddress)
