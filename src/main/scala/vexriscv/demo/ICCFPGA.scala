@@ -83,11 +83,13 @@ object ICCFPGAConfig{
 /*        new StaticMemoryTranslatorPlugin(
           ioRange      = _(31 downto 28) === 0xF
         ),*/
-        new MemoryProtectionUnitPlugin(
-          ioRange         = _(31 downto 28) === 0xF,  // 0xF....... not-cached I/O 
-          romRange        = _(31 downto 28) === 0x0,  // 0x0....... ROM
-          ramRange        = _(31 downto 28) === 0x8,  // 0x8....... RAM
-          supervisorRange = _(27 downto 24) === 0x4   // 0xF4...... not-cached I/O supervisor, 0x.4...... cached supervisor
+        new PMPPlugin(
+            config = PMPPluginConfig(
+                ioRange         = _(31 downto 28) === 0xF,  // 0xF....... not-cached I/O 
+                romRange        = _(31 downto 28) === 0x0,  // 0x0....... ROM
+                ramRange        = _(31 downto 28) === 0x8,  // 0x8....... RAM
+                supervisorRange = _(27 downto 24) === 0x4   // 0xF4...... not-cached I/O supervisor, 0x.4...... cached supervisor
+            )
         ),
         new DecoderSimplePlugin(
           catchIllegalInstruction = true

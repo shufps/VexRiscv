@@ -139,6 +139,28 @@ object Riscv{
     def MIBOUND   = 0x383 // MRW Instruction bound register.
     def MDBASE    = 0x384 // MRW Data base register.
     def MDBOUND   = 0x385 // MRW Data bound register.
+    
+    def PMPCFG0   = 0x3a0 // Physical Memory Protection Configuration
+    def PMPCFG1   = 0x3a1 // Physical Memory Protection Configuration
+    def PMPCFG2   = 0x3a2 // Physical Memory Protection Configuration
+    def PMPCFG3   = 0x3a3 // Physical Memory Protection Configuration
+    def PMPADDR0  = 0x3b0 // Physical Memory Protection Address Register
+    def PMPADDR1  = 0x3b1 // Physical Memory Protection Address Register
+    def PMPADDR2  = 0x3b2 // Physical Memory Protection Address Register
+    def PMPADDR3  = 0x3b3 // Physical Memory Protection Address Register
+    def PMPADDR4  = 0x3b4 // Physical Memory Protection Address Register
+    def PMPADDR5  = 0x3b5 // Physical Memory Protection Address Register
+    def PMPADDR6  = 0x3b6 // Physical Memory Protection Address Register
+    def PMPADDR7  = 0x3b7 // Physical Memory Protection Address Register
+    def PMPADDR8  = 0x3b8 // Physical Memory Protection Address Register
+    def PMPADDR9  = 0x3b9 // Physical Memory Protection Address Register
+    def PMPADDR10 = 0x3ba // Physical Memory Protection Address Register
+    def PMPADDR11 = 0x3bb // Physical Memory Protection Address Register
+    def PMPADDR12 = 0x3bc // Physical Memory Protection Address Register
+    def PMPADDR13 = 0x3bd // Physical Memory Protection Address Register
+    def PMPADDR14 = 0x3be // Physical Memory Protection Address Register
+    def PMPADDR15 = 0x3bf // Physical Memory Protection Address Register
+    
     def MCYCLE    = 0xB00 // MRW Machine cycle counter.
     def MINSTRET  = 0xB02 // MRW Machine instructions-retired counter.
     def MCYCLEH   = 0xB80 // MRW Upper 32 bits of mcycle, RV32I only.
