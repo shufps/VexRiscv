@@ -85,10 +85,7 @@ object ICCFPGAConfig{
         ),*/
         new PMPPlugin(
             config = PMPPluginConfig(
-                ioRange         = _(31 downto 28) === 0xF,  // 0xF....... not-cached I/O 
-                romRange        = _(31 downto 28) === 0x0,  // 0x0....... ROM
-                ramRange        = _(31 downto 28) === 0x8,  // 0x8....... RAM
-                supervisorRange = _(27 downto 24) === 0x4   // 0xF4...... not-cached I/O supervisor, 0x.4...... cached supervisor
+                ioRange         = _(31 downto 28) === 0xF
             )
         ),
         new DecoderSimplePlugin(
@@ -365,12 +362,13 @@ object ICCFPGA{
   def main(args: Array[String]) {
     val config = SpinalConfig()
     config.generateVerilog({
+//    config.generateVhdl({
       val toplevel = new ICCFPGA(ICCFPGAConfig.default)
       toplevel
     })
   }
 }
-
+/*
 //DE1-SoC with memory init
 object ICCFPGAWithMemoryInit{
   def main(args: Array[String]) {
@@ -393,4 +391,4 @@ object ICCFPGADe0Nano{
       toplevel
     })
   }
-}
+}*/
