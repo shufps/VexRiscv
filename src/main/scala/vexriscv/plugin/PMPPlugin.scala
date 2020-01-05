@@ -1,3 +1,34 @@
+/*
+-- PMP Plugin
+--
+-- 2020 by Thomas Pototschnig <microengineer18@gmail.com>
+-- discord: pmaxuw#8292
+--
+-- Permission is hereby granted, free of charge, to any person obtaining
+-- a copy of this software and associated documentation files (the
+-- "Software"), to deal in the Software without restriction, including
+-- without limitation the rights to use, copy, modify, merge, publish,
+-- distribute, sublicense, and/or sell copies of the Software, and to
+-- permit persons to whom the Software is furnished to do so, subject to
+-- the following conditions:
+-- 
+-- The above copyright notice and this permission notice shall be
+-- included in all copies or substantial portions of the Software.
+-- 
+-- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+-- EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+-- MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+-- NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+-- LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+-- OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+-- WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWAR
+--
+-- With help of:
+--      - https://github.com/qemu/qemu/blob/master/target/riscv/pmp.c
+--      - https://content.riscv.org/wp-content/uploads/2017/05/riscv-privileged-v1.10.pdf
+-- 
+*/
+
 package vexriscv.plugin
 
 import vexriscv.{VexRiscv, _}
@@ -14,39 +45,15 @@ import scala.collection.mutable.ArrayBuffer
 case class PMPPluginPort(bus : MemoryTranslatorBus, priority : Int)
 
 case class PMPPluginConfig (
-                            ioRange             : UInt => Bool,
-                            pmpcfg0Init         : BigInt = 0x00000000,
-                            pmpcfg1Init         : BigInt = 0x00000000,
-                            pmpcfg2Init         : BigInt = 0x00000000,
-                            pmpcfg3Init         : BigInt = 0x00000000,
-                            pmpaddr0Init        : BigInt = 0x00000000,
-                            pmpaddr1Init        : BigInt = 0x00000000,
-                            pmpaddr2Init        : BigInt = 0x00000000,
-                            pmpaddr3Init        : BigInt = 0x00000000,
-                            pmpaddr4Init        : BigInt = 0x00000000,
-                            pmpaddr5Init        : BigInt = 0x00000000,
-                            pmpaddr6Init        : BigInt = 0x00000000,
-                            pmpaddr7Init        : BigInt = 0x00000000,
-                            pmpaddr8Init        : BigInt = 0x00000000,
-                            pmpaddr9Init        : BigInt = 0x00000000,
-                            pmpaddr10Init       : BigInt = 0x00000000,
-                            pmpaddr11Init       : BigInt = 0x00000000,
-                            pmpaddr12Init       : BigInt = 0x00000000,
-                            pmpaddr13Init       : BigInt = 0x00000000,
-                            pmpaddr14Init       : BigInt = 0x00000000,
-                            pmpaddr15Init       : BigInt = 0x00000000
+                            ioRange             : UInt => Bool
 ) {
-
 }
-
-
 
 class PMPPlugin(val config: PMPPluginConfig) extends Plugin[VexRiscv] with MemoryTranslator {
   import config._
   val portsInfo = ArrayBuffer[PMPPluginPort]()
 
   override def newTranslationPort(priority : Int,args : Any): MemoryTranslatorBus = {
-//    val exceptionBus = pipeline.service(classOf[ExceptionService]).newExceptionPort(stage)
     val port = PMPPluginPort(MemoryTranslatorBus(),priority)
     portsInfo += port
     port.bus
@@ -141,8 +148,7 @@ class PMPPlugin(val config: PMPPluginConfig) extends Plugin[VexRiscv] with Memor
         var matched_x = False
         var enabled = False
         
-        // inspired by https://github.com/qemu/qemu/blob/master/target/riscv/pmp.c
-       
+      
         for (i <- 0 to 15) {
             val pmp_r    = shadow_pmpcfg(i)(0)
             val pmp_w    = shadow_pmpcfg(i)(1)
