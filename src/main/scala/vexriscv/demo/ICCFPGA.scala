@@ -85,7 +85,8 @@ object ICCFPGAConfig{
         ),*/
         new PMPPlugin(
             config = PMPPluginConfig(
-                ioRange         = _(31 downto 28) === 0xF
+                ioRange             = _(31 downto 28) === 0xF,
+                pmpCfgRegisterCount = 4
             )
         ),
         new DecoderSimplePlugin(
@@ -137,14 +138,14 @@ object ICCFPGAConfig{
             ecallGen       = true,
             wfiGenAsWait   = false,
             ucycleAccess   = CsrAccess.NONE,
-            userGen        = true,
-            supervisorGen  = true,
+            userGen        = true
+/*            supervisorGen  = true,
             stvecAccess         = CsrAccess.READ_WRITE,
             sepcAccess          = CsrAccess.READ_WRITE,
             scauseAccess        = CsrAccess.READ_WRITE,
             sbadaddrAccess      = CsrAccess.READ_WRITE,
             medelegAccess       = CsrAccess.WRITE_ONLY,
-            midelegAccess       = CsrAccess.WRITE_ONLY
+            midelegAccess       = CsrAccess.WRITE_ONLY*/
           )
         ),
         new YamlPlugin("cpu0.yaml")
@@ -185,9 +186,9 @@ class ICCFPGA(config: ICCFPGAConfig) extends Component{
 
     //Peripherals IO
     val timerInterrupt = in Bool
-    val timerExternal = in(PinsecTimerCtrlExternal())
+/*    val timerExternal = in(PinsecTimerCtrlExternal()) */
     val coreInterrupt = in Bool
-    val coreInterruptS = in Bool
+//    val coreInterruptS = in Bool
   }
 
   val resetCtrlClockDomain = ClockDomain(
@@ -236,7 +237,7 @@ class ICCFPGA(config: ICCFPGAConfig) extends Component{
       byteCount = 128 kB,
       idWidth = 4
     )
-
+/*
     val svram = Axi4SharedOnChipRam(
       dataWidth = 32,
       byteCount = 4 kB,
@@ -244,7 +245,7 @@ class ICCFPGA(config: ICCFPGAConfig) extends Component{
     )
 
     svram.ram.generateAsBlackBox()
-
+*/
     val rom = Axi4SharedOnChipRam(
       dataWidth = 32,
       byteCount = 128 kB,
@@ -256,7 +257,7 @@ class ICCFPGA(config: ICCFPGAConfig) extends Component{
 
     ram.ram.userLabel = "ram"
     rom.ram.userLabel = "rom"
-
+/*
     val apbBridge = Axi4SharedToApb3Bridge(
       addressWidth = 20,
       dataWidth    = 32,
@@ -264,7 +265,7 @@ class ICCFPGA(config: ICCFPGAConfig) extends Component{
     )
 
     val timerCtrl = PinsecTimerCtrl()
-
+*/
 
     val core = new Area{
       val config = VexRiscvConfig(
@@ -281,8 +282,8 @@ class ICCFPGA(config: ICCFPGAConfig) extends Component{
         case plugin : DBusCachedPlugin => dBus = plugin.dBus.toAxi4Shared(true)
         case plugin : CsrPlugin        => {
           plugin.externalInterrupt := BufferCC(io.coreInterrupt)
-          plugin.externalInterruptS := BufferCC(io.coreInterruptS)
-          plugin.timerInterrupt := BufferCC(io.timerInterrupt) //timerCtrl.io.interrupt
+//          plugin.externalInterruptS := BufferCC(io.coreInterruptS)
+          plugin.timerInterrupt := BufferCC(io.timerInterrupt) /* timerCtrl.io.interrupt */
         }
         case plugin : DebugPlugin      => debugClockDomain{
           resetCtrl.axiReset setWhen(RegNext(plugin.io.resetOut))
@@ -297,24 +298,24 @@ class ICCFPGA(config: ICCFPGAConfig) extends Component{
     axiCrossbar.addSlaves(
       rom.io.axi           -> (0x00000000L,   128 kB),
       ram.io.axi           -> (0x80000000L,   128 kB),
-      svram.io.axi         -> (0x84000000L,   4 kB),
-      apbBridge.io.axi     -> (0xF0000000L,   1 MB),
+/*      svram.io.axi         -> (0x84000000L,   4 kB), */
+/*      apbBridge.io.axi     -> (0xF0000000L,   1 MB), */
       io.axiIO             -> (0xF1000000L,   64 MB)
     )
 
     axiCrossbar.addConnections(
       core.iBus       -> List(rom.io.axi),
-      core.dBus       -> List(rom.io.axi, ram.io.axi, svram.io.axi, apbBridge.io.axi, io.axiIO)
+      core.dBus       -> List(rom.io.axi, ram.io.axi, /* svram.io.axi,*/ /*apbBridge.io.axi,*/ io.axiIO)
     )
 
-
+/*
     axiCrossbar.addPipelining(apbBridge.io.axi)((crossbar,bridge) => {
       crossbar.sharedCmd.halfPipe() >> bridge.sharedCmd
       crossbar.writeData.halfPipe() >> bridge.writeData
       crossbar.writeRsp             << bridge.writeRsp
       crossbar.readRsp              << bridge.readRsp
     })
-
+*/
     axiCrossbar.addPipelining(rom.io.axi)((crossbar,ctrl) => {
       crossbar.sharedCmd.halfPipe()  >>  ctrl.sharedCmd
       crossbar.writeData            >/-> ctrl.writeData
@@ -328,14 +329,14 @@ class ICCFPGA(config: ICCFPGAConfig) extends Component{
       crossbar.writeRsp              <<  ctrl.writeRsp
       crossbar.readRsp               <<  ctrl.readRsp
     })
-
+/*
     axiCrossbar.addPipelining(svram.io.axi)((crossbar,ctrl) => {
       crossbar.sharedCmd.halfPipe()  >>  ctrl.sharedCmd
       crossbar.writeData            >/-> ctrl.writeData
       crossbar.writeRsp              <<  ctrl.writeRsp
       crossbar.readRsp               <<  ctrl.readRsp
     })
-
+*/
     axiCrossbar.addPipelining(core.dBus)((cpu,crossbar) => {
       cpu.sharedCmd             >>  crossbar.sharedCmd
       cpu.writeData             >>  crossbar.writeData
@@ -345,16 +346,18 @@ class ICCFPGA(config: ICCFPGAConfig) extends Component{
 
     axiCrossbar.build()
 
-
+/*
     val apbDecoder = Apb3Decoder(
       master = apbBridge.io.apb,
       slaves = List(
         timerCtrl.io.apb -> (0x20000, 4 kB)
       )
     )
+*/    
   }
-
+/*  
   io.timerExternal  <> axi.timerCtrl.io.external
+*/
 }
 
 //DE1-SoC

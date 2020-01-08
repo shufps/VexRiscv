@@ -37,16 +37,17 @@ import spinal.lib._
 import vexriscv._
 import vexriscv.Riscv._
 
-import util.control.Breaks._
-import scala.collection.mutable
-
-
 import scala.collection.mutable.ArrayBuffer
+
 case class PMPPluginPort(bus : MemoryTranslatorBus, priority : Int)
 
 case class PMPPluginConfig (
+                            pmpCfgRegisterCount : Int,
                             ioRange             : UInt => Bool
 ) {
+    assert(pmpCfgRegisterCount >= 1 && pmpCfgRegisterCount <= 4)
+
+    val pmpCount = pmpCfgRegisterCount * 4
 }
 
 class PMPPlugin(val config: PMPPluginConfig) extends Plugin[VexRiscv] with MemoryTranslator {
@@ -67,24 +68,24 @@ class PMPPlugin(val config: PMPPluginConfig) extends Plugin[VexRiscv] with Memor
     import pipeline.config._
     import Riscv._
 
+    
     val core = pipeline plug new Area {
         // registers for CSRs
-        val pmpcfgPacked = Array.fill(4)(Reg(UInt(32 bits)) init(U"x00000000"))
-        val pmpaddr = Array.fill(16)(Reg(UInt(32 bits)) /*init(U"x00000000")*/)
+        val pmpcfgPacked = Array.fill(pmpCount/4)(Reg(UInt(32 bits)) init(U"x00000000"))
+        val pmpaddr = Array.fill(pmpCount)(Reg(UInt(32 bits)))
 
         // unpack pmpcfgx CSR registers
-        var pmpcfg = new Array[UInt](16)
-        for (j <- 0 to 3) {
-            for (i <- 0 to 3) {
-                pmpcfg(j*4+i)  = pmpcfgPacked(j)(i*8+7 downto i*8)
-            }
-        }
-        
-        // shadow-registers - store in unpacked form
-        val shadow_pmpaddr = Array.fill(16)(Reg(UInt(32 bits)) /*init(U"x00000000")*/)
-        val shadow_pmpcfg = Array.fill(16)(Reg(UInt(8 bits)) init(U"x00"))
+        var pmpcfg = new Array[UInt](pmpCount)
 
-        for (i <- 0 to 15) {
+        for (i <- 0 to pmpCount-1) {
+            pmpcfg(i)  = pmpcfgPacked(i/4)((i%4)*8+7 downto (i%4)*8)
+        }
+
+        // shadow-registers - store in unpacked form
+        val shadow_pmpaddr = Array.fill(pmpCount)(Reg(UInt(32 bits)))
+        val shadow_pmpcfg = Array.fill(pmpCount)(Reg(UInt(8 bits)) init(U"x00"))
+
+        for (i <- 0 to pmpCount-1) {
             var locked = False
             
             // current entry locked?
@@ -92,7 +93,7 @@ class PMPPlugin(val config: PMPPluginConfig) extends Plugin[VexRiscv] with Memor
                 locked \= True
             }.otherwise{
                 // Top PMP has no 'next' to check
-                if (i == 15) {
+                if (i == pmpCount-1) {
                     locked \= False
                 } else {
                     // In TOR mode, need to check the lock bit of the next pmp
@@ -111,25 +112,25 @@ class PMPPlugin(val config: PMPPluginConfig) extends Plugin[VexRiscv] with Memor
       val csrService = pipeline.service(classOf[CsrInterface])
 
       // write CSRs
-      for (i <- 0 to 15) {
-        if (i < 4) {
-            csrService.w(CSR.PMPCFG0 + i, pmpcfgPacked(i))
-        }
-        csrService.w(CSR.PMPADDR0 + i, pmpaddr(i))
+      for (i <- 0 to pmpCount/4-1) {
+          csrService.w(CSR.PMPCFG0 + i, pmpcfgPacked(i))
+      }
+
+      for (i <- 0 to pmpCount-1) {
+          csrService.w(CSR.PMPADDR0 + i, pmpaddr(i))
       }
 
       // read CSRs and pack pmpcfgx-registers
-      val tmp_pmpcfgPacked = Array.fill(4)(UInt(32 bits))
-      for (j <- 0 to 3) {
-        for (i <- 0 to 3) {
-            tmp_pmpcfgPacked(j)(i*8+7 downto i*8) := shadow_pmpcfg(j*4+i)
-        }
+      val tmp_pmpcfgPacked = Array.fill(pmpCount/4)(UInt(32 bits))
+      for (i <- 0 to pmpCount-1) {
+          tmp_pmpcfgPacked(i/4)((i%4)*8+7 downto (i%4)*8) := shadow_pmpcfg(i)
       }
     
-      for (i <- 0 to 15) {
-        if (i < 4) {
-            csrService.r(CSR.PMPCFG0 + i, tmp_pmpcfgPacked(i))
-        } 
+      for (i <- 0 to pmpCount/4-1) {
+          csrService.r(CSR.PMPCFG0 + i, tmp_pmpcfgPacked(i))
+      } 
+
+      for (i <- 0 to pmpCount-1) {
         csrService.r(CSR.PMPADDR0 + i, shadow_pmpaddr(i))
       }
 
@@ -149,7 +150,7 @@ class PMPPlugin(val config: PMPPluginConfig) extends Plugin[VexRiscv] with Memor
         var enabled = False
         
       
-        for (i <- 0 to 15) {
+        for (i <- 0 to pmpCount-1) {
             val pmp_r    = shadow_pmpcfg(i)(0)
             val pmp_w    = shadow_pmpcfg(i)(1)
             val pmp_x    = shadow_pmpcfg(i)(2)
