@@ -86,7 +86,7 @@ object ICCFPGAConfig{
         new PMPPlugin(
             config = PMPPluginConfig(
                 ioRange             = _(31 downto 28) === 0xF,
-                pmpCfgRegisterCount = 4
+                pmpCfgRegisterCount = 2
             )
         ),
         new DecoderSimplePlugin(
@@ -237,7 +237,7 @@ class ICCFPGA(config: ICCFPGAConfig) extends Component{
       byteCount = 128 kB,
       idWidth = 4
     )
-/*
+
     val svram = Axi4SharedOnChipRam(
       dataWidth = 32,
       byteCount = 4 kB,
@@ -245,7 +245,7 @@ class ICCFPGA(config: ICCFPGAConfig) extends Component{
     )
 
     svram.ram.generateAsBlackBox()
-*/
+
     val rom = Axi4SharedOnChipRam(
       dataWidth = 32,
       byteCount = 128 kB,
@@ -257,6 +257,7 @@ class ICCFPGA(config: ICCFPGAConfig) extends Component{
 
     ram.ram.userLabel = "ram"
     rom.ram.userLabel = "rom"
+    svram.ram.userLabel = "secure"
 /*
     val apbBridge = Axi4SharedToApb3Bridge(
       addressWidth = 20,
@@ -298,14 +299,14 @@ class ICCFPGA(config: ICCFPGAConfig) extends Component{
     axiCrossbar.addSlaves(
       rom.io.axi           -> (0x00000000L,   128 kB),
       ram.io.axi           -> (0x80000000L,   128 kB),
-/*      svram.io.axi         -> (0x84000000L,   4 kB), */
+      svram.io.axi         -> (0x84000000L,   4 kB), 
 /*      apbBridge.io.axi     -> (0xF0000000L,   1 MB), */
       io.axiIO             -> (0xF1000000L,   64 MB)
     )
 
     axiCrossbar.addConnections(
       core.iBus       -> List(rom.io.axi),
-      core.dBus       -> List(rom.io.axi, ram.io.axi, /* svram.io.axi,*/ /*apbBridge.io.axi,*/ io.axiIO)
+      core.dBus       -> List(rom.io.axi, ram.io.axi, svram.io.axi, /*apbBridge.io.axi,*/ io.axiIO)
     )
 
 /*
@@ -329,14 +330,14 @@ class ICCFPGA(config: ICCFPGAConfig) extends Component{
       crossbar.writeRsp              <<  ctrl.writeRsp
       crossbar.readRsp               <<  ctrl.readRsp
     })
-/*
+
     axiCrossbar.addPipelining(svram.io.axi)((crossbar,ctrl) => {
       crossbar.sharedCmd.halfPipe()  >>  ctrl.sharedCmd
       crossbar.writeData            >/-> ctrl.writeData
       crossbar.writeRsp              <<  ctrl.writeRsp
       crossbar.readRsp               <<  ctrl.readRsp
     })
-*/
+
     axiCrossbar.addPipelining(core.dBus)((cpu,crossbar) => {
       cpu.sharedCmd             >>  crossbar.sharedCmd
       cpu.writeData             >>  crossbar.writeData
