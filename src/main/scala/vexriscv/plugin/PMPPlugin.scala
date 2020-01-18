@@ -43,6 +43,7 @@ case class PMPPluginPort(bus : MemoryTranslatorBus, priority : Int)
 
 case class PMPPluginConfig (
                             pmpCfgRegisterCount : Int,
+                            privExtension       : Boolean,
                             ioRange             : UInt => Bool
 ) {
     assert(pmpCfgRegisterCount >= 1 && pmpCfgRegisterCount <= 4)
@@ -89,7 +90,7 @@ class PMPPlugin(val config: PMPPluginConfig) extends Plugin[VexRiscv] with Memor
             var locked = False
             
             // current entry locked?
-            when (shadow_pmpcfg(i)(7) === True) {
+            when (shadow_pmpcfg(i)(7)) {
                 locked \= True
             }.otherwise{
                 // Top PMP has no 'next' to check
@@ -98,12 +99,12 @@ class PMPPlugin(val config: PMPPluginConfig) extends Plugin[VexRiscv] with Memor
                 } else {
                     // In TOR mode, need to check the lock bit of the next pmp
                     // (if there is a next)
-                    when (shadow_pmpcfg(i+1)(7) === True && shadow_pmpcfg(i+1)(4 downto 3) === U"01") {
+                    when (shadow_pmpcfg(i+1)(7) && shadow_pmpcfg(i+1)(4 downto 3) === U"01") {
                         locked \= True
                     }
                 }
             }
-            when (locked =/= True) {
+            when (!locked) {
                 shadow_pmpcfg(i) := pmpcfg(i)
                 shadow_pmpaddr(i) := pmpaddr(i)
             }
@@ -156,6 +157,7 @@ class PMPPlugin(val config: PMPPluginConfig) extends Plugin[VexRiscv] with Memor
             val pmp_x    = shadow_pmpcfg(i)(2)
             val pmp_a    = shadow_pmpcfg(i)(4 downto 3)
 //          val pmp_     = shadow_pmpcfg(i)(6 downto 5)    // not used
+            val pmp_p    = shadow_pmpcfg(i)(6 downto 5)     // custom: match privilege level with bits
             val pmp_l    = shadow_pmpcfg(i)(7)
             val pmp_addr = shadow_pmpaddr(i)
             
@@ -172,13 +174,27 @@ class PMPPlugin(val config: PMPPluginConfig) extends Plugin[VexRiscv] with Memor
             val match_na4 = (physAddr === pmp_addr)
             val match_napot = (physAddr & mask) === (pmp_addr & mask)
 
-            when (matched === False && (
-                    (match_tor   === True && pmp_a === U"01") ||
-                    (match_na4   === True && pmp_a === U"10") ||
-                    (match_napot === True && pmp_a === U"11")
-                 )) {
-                 
-                    when (privilegeService.isMachine() === False || pmp_l === True) {
+            when (!matched && (
+                    (match_tor   && pmp_a === U"01") ||
+                    (match_na4   && pmp_a === U"10") ||
+                    (match_napot && pmp_a === U"11")
+            )) {
+                // custom extension which uses unused bits for encoding minimum privilege level
+                if (privExtension) {
+                    when (
+                            (privilegeService.isMachine()     &&  pmp_p === 3)  ||
+//                          (privilegeService.isHypervisor()  &&  pmp_p === 2)  ||
+                            (privilegeService.isSupervisor()  &&  pmp_p === 1)  ||
+                            (privilegeService.isUser()        &&  pmp_p === 0) 
+                    
+                    ) {
+                        matched_r \= pmp_r
+                        matched_w \= pmp_w
+                        matched_x \= pmp_x
+                        matched \= True
+                    }
+                } else {
+                    when (!privilegeService.isMachine() || pmp_l) {
                         // When the L bit is set, these permissions are enforced for all privilege modes
                         matched_r \= pmp_r
                         matched_w \= pmp_w
@@ -190,21 +206,22 @@ class PMPPlugin(val config: PMPPluginConfig) extends Plugin[VexRiscv] with Memor
                         matched_x \= True
                     }                 
                     matched \= True
+                }
             }
         }
 
         // no active rule -> allow all
-        when (enabled === False) {
+        when (!enabled) {
             port.bus.rsp.allowRead := True
             port.bus.rsp.allowWrite := True
             port.bus.rsp.allowExecute := True
         }.otherwise {
-            when (matched === True) { // rule matched
+            when (matched) { // rule matched
                 port.bus.rsp.allowRead := matched_r
                 port.bus.rsp.allowWrite := matched_w
                 port.bus.rsp.allowExecute := matched_x
             }.otherwise {
-                when (privilegeService.isMachine() === True) { 
+                when (privilegeService.isMachine()) { 
                     // Privileged spec v1.10 states if no PMP entry matches an
                     // M-Mode access, the access succeeds 
                     port.bus.rsp.allowRead := True

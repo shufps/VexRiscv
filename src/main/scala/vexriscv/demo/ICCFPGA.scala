@@ -86,7 +86,8 @@ object ICCFPGAConfig{
         new PMPPlugin(
             config = PMPPluginConfig(
                 ioRange             = _(31 downto 28) === 0xF,
-                pmpCfgRegisterCount = 2
+                privExtension       = true, // custom extension
+                pmpCfgRegisterCount = 3
             )
         ),
         new DecoderSimplePlugin(
@@ -139,7 +140,8 @@ object ICCFPGAConfig{
             wfiGenAsWait   = false,
             ucycleAccess   = CsrAccess.NONE,
             userGen        = true
-/*            supervisorGen  = true,
+/*            
+            supervisorGen  = true,
             stvecAccess         = CsrAccess.READ_WRITE,
             sepcAccess          = CsrAccess.READ_WRITE,
             scauseAccess        = CsrAccess.READ_WRITE,
@@ -283,7 +285,7 @@ class ICCFPGA(config: ICCFPGAConfig) extends Component{
         case plugin : DBusCachedPlugin => dBus = plugin.dBus.toAxi4Shared(true)
         case plugin : CsrPlugin        => {
           plugin.externalInterrupt := BufferCC(io.coreInterrupt)
-//          plugin.externalInterruptS := BufferCC(io.coreInterruptS)
+//          plugin.externalInterruptS := False //BufferCC(io.coreInterruptS)
           plugin.timerInterrupt := BufferCC(io.timerInterrupt) /* timerCtrl.io.interrupt */
         }
         case plugin : DebugPlugin      => debugClockDomain{
