@@ -87,7 +87,7 @@ object ICCFPGAConfig{
             config = PMPPluginConfig(
                 ioRange             = _(31 downto 28) === 0xF,
                 privExtension       = true, // custom extension
-                pmpCfgRegisterCount = 3
+                pmpCfgRegisterCount = 2
             )
         ),
         new DecoderSimplePlugin(
