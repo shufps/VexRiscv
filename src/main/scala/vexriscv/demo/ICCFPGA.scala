@@ -18,8 +18,8 @@ import spinal.lib.system.debugger.{JtagAxi4SharedDebugger, JtagBridge, SystemDeb
 import scala.collection.mutable.ArrayBuffer
 
 
-case class ICCFPGAConfig(axiFrequency : HertzNumber,
-                       onChipRamSize : BigInt,
+case class ICCFPGAConfig(
+                       debug : Boolean,
                        cpuPlugins : ArrayBuffer[Plugin[VexRiscv]]
                       )
 
@@ -27,14 +27,9 @@ object ICCFPGAConfig{
 
   def default = {
     val config = ICCFPGAConfig(
-      axiFrequency = 50 MHz,
-      onChipRamSize  = 4 kB,
+      debug = true,
       cpuPlugins = ArrayBuffer(
         new PcManagerSimplePlugin(0x00000000l, false),
-        //          new IBusSimplePlugin(
-        //            interfaceKeepData = false,
-        //            catchAccessFault = true
-        //          ),
         new IBusCachedPlugin(
           resetVector = 0x00000000l,
           prediction = STATIC,
@@ -53,15 +48,7 @@ object ICCFPGAConfig{
             twoCycleRam = true,
             twoCycleCache = true
           )
-          //            askMemoryTranslation = true,
-          //            memoryTranslatorPortConfig = MemoryTranslatorPortConfig(
-          //              portTlbSize = 4
-          //            )
         ),
-        //                    new DBusSimplePlugin(
-        //                      catchAddressMisaligned = true,
-        //                      catchAccessFault = true
-        //                    ),
         new DBusCachedPlugin(
           config = new DataCacheConfig(
             cacheSize         = 4096,
@@ -76,13 +63,7 @@ object ICCFPGAConfig{
 //            memAsBlackBox     = true
           ),
           memoryTranslatorPortConfig = null
-          //            memoryTranslatorPortConfig = MemoryTranslatorPortConfig(
-          //              portTlbSize = 6
-          //            )
         ),
-/*        new StaticMemoryTranslatorPlugin(
-          ioRange      = _(31 downto 28) === 0xF
-        ),*/
         new PMPPlugin(
             config = PMPPluginConfig(
                 ioRange             = _(31 downto 28) === 0xF,
@@ -161,13 +142,10 @@ object ICCFPGAConfig{
 
 class ICCFPGA(config: ICCFPGAConfig) extends Component{
 
-  //Legacy constructor
-  def this(axiFrequency: HertzNumber) {
-    this(ICCFPGAConfig.default.copy(axiFrequency = axiFrequency))
-  }
+
 
   import config._
-  val debug = true
+//  val debug = config.debug
   val interruptCount = 4
     
   val axiIOConfig = Axi4Config (
@@ -223,13 +201,13 @@ class ICCFPGA(config: ICCFPGAConfig) extends Component{
   val axiClockDomain = ClockDomain(
     clock = io.axiClk,
     reset = resetCtrl.axiReset,
-    frequency = FixedFrequency(axiFrequency) //The frequency information is used by the SDRAM controller
+    frequency = FixedFrequency(100 MHz)
   )
 
   val debugClockDomain = ClockDomain(
     clock = io.axiClk,
     reset = resetCtrl.systemReset,
-    frequency = FixedFrequency(axiFrequency)
+    frequency = FixedFrequency(100 MHz)
   )
 
 
@@ -271,10 +249,23 @@ class ICCFPGA(config: ICCFPGAConfig) extends Component{
 */
 
     val core = new Area{
-      val config = VexRiscvConfig(
-        plugins = cpuPlugins += new DebugPlugin(debugClockDomain)
-      )
 
+      var config = VexRiscvConfig(
+        plugins = cpuPlugins
+      )
+      if (debug) {
+        config.plugins += new DebugPlugin(debugClockDomain)
+      }
+/*      if (debug) {
+        val config = VexRiscvConfig(
+            plugins = cpuPlugins += new DebugPlugin(debugClockDomain)
+        )
+      } else {
+        val config = VexRiscvConfig(
+            plugins = cpuPlugins
+        )
+      }      
+*/
       val cpu = new VexRiscv(config)
       var iBus : Axi4ReadOnly = null
       var dBus : Axi4Shared = null
@@ -349,21 +340,13 @@ class ICCFPGA(config: ICCFPGAConfig) extends Component{
 
     axiCrossbar.build()
 
-/*
-    val apbDecoder = Apb3Decoder(
-      master = apbBridge.io.apb,
-      slaves = List(
-        timerCtrl.io.apb -> (0x20000, 4 kB)
-      )
-    )
-*/    
+    if (!debug) {
+        io.jtag.tdo := False
+    }
   }
-/*  
-  io.timerExternal  <> axi.timerCtrl.io.external
-*/
 }
 
-//DE1-SoC
+// ICCFPGA module with Debug
 object ICCFPGA{
   def main(args: Array[String]) {
     val config = SpinalConfig()
@@ -374,27 +357,17 @@ object ICCFPGA{
     })
   }
 }
-/*
-//DE1-SoC with memory init
-object ICCFPGAWithMemoryInit{
+
+// ICCFPGA module without Debug
+object ICCFPGA_NoDebug {
   def main(args: Array[String]) {
-    val config = SpinalConfig()
+    val config = SpinalConfig(netlistFileName = "NoDebug_ICCFPGA.v",  globalPrefix="NoDebug_")
     config.generateVerilog({
-      val toplevel = new ICCFPGA(ICCFPGAConfig.default)
-      HexTools.initRam(toplevel.axi.ram.ram, "src/main/ressource/hex/muraxDemo.hex", 0x80000000l)
+//    config.generateVhdl({
+      val toplevel = new ICCFPGA(ICCFPGAConfig.default) //.setDefinitionName("ICCFPGA_NoDebug")
+      
       toplevel
     })
   }
 }
 
-
-//DE0-Nano
-object ICCFPGADe0Nano{
-  def main(args: Array[String]) {
-    val config = SpinalConfig()
-    config.generateVerilog({
-      val toplevel = new ICCFPGA(ICCFPGAConfig.default.copy())
-      toplevel
-    })
-  }
-}*/
