@@ -364,7 +364,7 @@ object ICCFPGA_NoDebug {
     val config = SpinalConfig(netlistFileName = "NoDebug_ICCFPGA.v",  globalPrefix="NoDebug_")
     config.generateVerilog({
 //    config.generateVhdl({
-      val toplevel = new ICCFPGA(ICCFPGAConfig.default) //.setDefinitionName("ICCFPGA_NoDebug")
+      val toplevel = new ICCFPGA(ICCFPGAConfig.default.copy(debug = false))
       
       toplevel
     })
