@@ -220,7 +220,8 @@ class ICCFPGA(config: ICCFPGAConfig) extends Component{
 
     val svram = Axi4SharedOnChipRam(
       dataWidth = 32,
-      byteCount = 4 kB,
+/*      byteCount = 4 kB,*/
+      byteCount = 2 kB,
       idWidth = 4
     )
 
@@ -292,7 +293,7 @@ class ICCFPGA(config: ICCFPGAConfig) extends Component{
     axiCrossbar.addSlaves(
       rom.io.axi           -> (0x00000000L,   128 kB),
       ram.io.axi           -> (0x80000000L,   128 kB),
-      svram.io.axi         -> (0x84000000L,   4 kB), 
+      svram.io.axi         -> (0x84000000L,   2 kB), 
 /*      apbBridge.io.axi     -> (0xF0000000L,   1 MB), */
       io.axiIO             -> (0xF1000000L,   64 MB)
     )

@@ -1,5 +1,5 @@
-// Generator : SpinalHDL v1.3.7    git head : b4bb5de6c6213d3b930b529c603d0c7eb83a26dd
-// Date      : 01/02/2020, 14:25:53
+// Generator : SpinalHDL v1.3.7    git head : ab01baba5edd0c50f7332eea31fb9d4f8739dede
+// Date      : 10/02/2020, 08:19:22
 // Component : ICCFPGA
 
 
@@ -1521,7 +1521,7 @@ endmodule
 module StreamArbiter_1_ (
       input   io_inputs_0_valid,
       output  io_inputs_0_ready,
-      input  [11:0] io_inputs_0_payload_addr,
+      input  [10:0] io_inputs_0_payload_addr,
       input  [3:0] io_inputs_0_payload_id,
       input  [7:0] io_inputs_0_payload_len,
       input  [2:0] io_inputs_0_payload_size,
@@ -1529,7 +1529,7 @@ module StreamArbiter_1_ (
       input   io_inputs_0_payload_write,
       output  io_output_valid,
       input   io_output_ready,
-      output [11:0] io_output_payload_addr,
+      output [10:0] io_output_payload_addr,
       output [3:0] io_output_payload_id,
       output [7:0] io_output_payload_len,
       output [2:0] io_output_payload_size,
@@ -1591,7 +1591,7 @@ endmodule
 module StreamFork_1_ (
       input   io_input_valid,
       output reg  io_input_ready,
-      input  [11:0] io_input_payload_addr,
+      input  [10:0] io_input_payload_addr,
       input  [3:0] io_input_payload_id,
       input  [7:0] io_input_payload_len,
       input  [2:0] io_input_payload_size,
@@ -1599,7 +1599,7 @@ module StreamFork_1_ (
       input   io_input_payload_write,
       output  io_outputs_0_valid,
       input   io_outputs_0_ready,
-      output [11:0] io_outputs_0_payload_addr,
+      output [10:0] io_outputs_0_payload_addr,
       output [3:0] io_outputs_0_payload_id,
       output [7:0] io_outputs_0_payload_len,
       output [2:0] io_outputs_0_payload_size,
@@ -1607,7 +1607,7 @@ module StreamFork_1_ (
       output  io_outputs_0_payload_write,
       output  io_outputs_1_valid,
       input   io_outputs_1_ready,
-      output [11:0] io_outputs_1_payload_addr,
+      output [10:0] io_outputs_1_payload_addr,
       output [3:0] io_outputs_1_payload_id,
       output [7:0] io_outputs_1_payload_len,
       output [2:0] io_outputs_1_payload_size,
@@ -2348,7 +2348,7 @@ endmodule
 module Axi4SharedOnChipRam_1_ (
       input   io_axi_arw_valid,
       output reg  io_axi_arw_ready,
-      input  [11:0] io_axi_arw_payload_addr,
+      input  [10:0] io_axi_arw_payload_addr,
       input  [3:0] io_axi_arw_payload_id,
       input  [7:0] io_axi_arw_payload_len,
       input  [2:0] io_axi_arw_payload_size,
@@ -2372,20 +2372,22 @@ module Axi4SharedOnChipRam_1_ (
       input   io_axiClk,
       input   resetCtrl_axiReset);
   wire  _zz_3_;
-  wire [9:0] _zz_4_;
+  wire [8:0] _zz_4_;
   reg [11:0] _zz_5_;
   wire [31:0] ram_rdData;
   wire  _zz_6_;
   wire [1:0] _zz_7_;
-  wire [11:0] _zz_8_;
+  wire [10:0] _zz_8_;
   wire [11:0] _zz_9_;
   wire [11:0] _zz_10_;
   wire [2:0] _zz_11_;
   wire [2:0] _zz_12_;
+  wire [11:0] _zz_13_;
+  wire [11:0] _zz_14_;
   reg  arw_valid;
   wire  arw_ready;
   reg  arw_payload_last;
-  reg [11:0] arw_payload_fragment_addr;
+  reg [10:0] arw_payload_fragment_addr;
   reg [3:0] arw_payload_fragment_id;
   reg [2:0] arw_payload_fragment_size;
   reg [1:0] arw_payload_fragment_burst;
@@ -2394,14 +2396,14 @@ module Axi4SharedOnChipRam_1_ (
   reg  unburstify_buffer_valid;
   reg [7:0] unburstify_buffer_len;
   reg [7:0] unburstify_buffer_beat;
-  reg [11:0] unburstify_buffer_transaction_addr;
+  reg [10:0] unburstify_buffer_transaction_addr;
   reg [3:0] unburstify_buffer_transaction_id;
   reg [2:0] unburstify_buffer_transaction_size;
   reg [1:0] unburstify_buffer_transaction_burst;
   reg  unburstify_buffer_transaction_write;
   wire  unburstify_buffer_last;
   wire [1:0] Axi4Incr_validSize;
-  reg [11:0] unburstify_buffer_address;
+  reg [10:0] unburstify_buffer_address;
   wire [2:0] Axi4Incr_sizeValue;
   wire [11:0] Axi4Incr_alignMask;
   wire [11:0] Axi4Incr_base;
@@ -2412,7 +2414,7 @@ module Axi4SharedOnChipRam_1_ (
   wire  stage0_valid;
   wire  stage0_ready;
   wire  stage0_payload_last;
-  wire [11:0] stage0_payload_fragment_addr;
+  wire [10:0] stage0_payload_fragment_addr;
   wire [3:0] stage0_payload_fragment_id;
   wire [2:0] stage0_payload_fragment_size;
   wire [1:0] stage0_payload_fragment_burst;
@@ -2420,27 +2422,29 @@ module Axi4SharedOnChipRam_1_ (
   wire  stage1_valid;
   wire  stage1_ready;
   wire  stage1_payload_last;
-  wire [11:0] stage1_payload_fragment_addr;
+  wire [10:0] stage1_payload_fragment_addr;
   wire [3:0] stage1_payload_fragment_id;
   wire [2:0] stage1_payload_fragment_size;
   wire [1:0] stage1_payload_fragment_burst;
   wire  stage1_payload_fragment_write;
   reg  stage0_m2sPipe_rValid;
   reg  stage0_m2sPipe_rData_last;
-  reg [11:0] stage0_m2sPipe_rData_fragment_addr;
+  reg [10:0] stage0_m2sPipe_rData_fragment_addr;
   reg [3:0] stage0_m2sPipe_rData_fragment_id;
   reg [2:0] stage0_m2sPipe_rData_fragment_size;
   reg [1:0] stage0_m2sPipe_rData_fragment_burst;
   reg  stage0_m2sPipe_rData_fragment_write;
   assign _zz_6_ = (io_axi_arw_payload_len == (8'b00000000));
   assign _zz_7_ = {((2'b01) < Axi4Incr_validSize),((2'b00) < Axi4Incr_validSize)};
-  assign _zz_8_ = unburstify_buffer_transaction_addr[11 : 0];
-  assign _zz_9_ = _zz_8_;
+  assign _zz_8_ = unburstify_buffer_transaction_addr[10 : 0];
+  assign _zz_9_ = {1'd0, _zz_8_};
   assign _zz_10_ = {9'd0, Axi4Incr_sizeValue};
   assign _zz_11_ = {1'd0, Axi4Incr_validSize};
   assign _zz_12_ = {1'd0, _zz_1_};
+  assign _zz_13_ = _zz_5_;
+  assign _zz_14_ = Axi4Incr_baseIncr;
   Ram_1wrs #( 
-    .wordCount(1024),
+    .wordCount(512),
     .wordWidth(32),
     .readUnderWrite("dontCare"),
     .technology("auto"),
@@ -2504,10 +2508,10 @@ module Axi4SharedOnChipRam_1_ (
         unburstify_buffer_address = unburstify_buffer_transaction_addr;
       end
       2'b10 : begin
-        unburstify_buffer_address = _zz_5_;
+        unburstify_buffer_address = _zz_13_[10:0];
       end
       default : begin
-        unburstify_buffer_address = Axi4Incr_baseIncr;
+        unburstify_buffer_address = _zz_14_[10:0];
       end
     endcase
   end
@@ -2606,7 +2610,7 @@ module Axi4SharedOnChipRam_1_ (
   assign io_axi_b_valid = ((stage1_valid && stage1_payload_fragment_write) && stage1_payload_last);
   assign io_axi_b_payload_resp = (2'b00);
   assign io_axi_b_payload_id = stage1_payload_fragment_id;
-  assign _zz_4_ = stage0_payload_fragment_addr[11 : 2];
+  assign _zz_4_ = stage0_payload_fragment_addr[10 : 2];
   assign _zz_3_ = ((stage0_valid && stage0_ready) && 1'b1);
   always @ (posedge io_axiClk or posedge resetCtrl_axiReset) begin
     if (resetCtrl_axiReset) begin
@@ -2634,7 +2638,7 @@ module Axi4SharedOnChipRam_1_ (
   always @ (posedge io_axiClk) begin
     if(arw_ready)begin
       unburstify_buffer_beat <= (unburstify_buffer_beat - (8'b00000001));
-      unburstify_buffer_transaction_addr[11 : 0] <= unburstify_buffer_address[11 : 0];
+      unburstify_buffer_transaction_addr[10 : 0] <= unburstify_buffer_address[10 : 0];
     end
     if(! unburstify_buffer_valid) begin
       if(! _zz_6_) begin
@@ -10264,7 +10268,7 @@ module Axi4SharedDecoder (
   assign _zz_22_ = pendingSels[1 : 1];
   assign _zz_23_ = (32'b00000000000000011111111111111111);
   assign _zz_24_ = (~ (32'b00000000000000011111111111111111));
-  assign _zz_25_ = (~ (32'b00000000000000000000111111111111));
+  assign _zz_25_ = (~ (32'b00000000000000000000011111111111));
   assign _zz_26_ = (32'b11110001000000000000000000000000);
   assign _zz_27_ = (32'b11110101000000000000000000000000);
   assign _zz_28_ = (32'b11110001000000000000000000000000);
@@ -10749,7 +10753,7 @@ endmodule
 module Axi4SharedArbiter_1_ (
       input   io_sharedInputs_0_arw_valid,
       output  io_sharedInputs_0_arw_ready,
-      input  [11:0] io_sharedInputs_0_arw_payload_addr,
+      input  [10:0] io_sharedInputs_0_arw_payload_addr,
       input  [3:0] io_sharedInputs_0_arw_payload_id,
       input  [7:0] io_sharedInputs_0_arw_payload_len,
       input  [2:0] io_sharedInputs_0_arw_payload_size,
@@ -10772,7 +10776,7 @@ module Axi4SharedArbiter_1_ (
       output  io_sharedInputs_0_r_payload_last,
       output  io_output_arw_valid,
       input   io_output_arw_ready,
-      output [11:0] io_output_arw_payload_addr,
+      output [10:0] io_output_arw_payload_addr,
       output [3:0] io_output_arw_payload_id,
       output [7:0] io_output_arw_payload_len,
       output [2:0] io_output_arw_payload_size,
@@ -10800,7 +10804,7 @@ module Axi4SharedArbiter_1_ (
   wire  _zz_3_;
   wire  cmdArbiter_io_inputs_0_ready;
   wire  cmdArbiter_io_output_valid;
-  wire [11:0] cmdArbiter_io_output_payload_addr;
+  wire [10:0] cmdArbiter_io_output_payload_addr;
   wire [3:0] cmdArbiter_io_output_payload_id;
   wire [7:0] cmdArbiter_io_output_payload_len;
   wire [2:0] cmdArbiter_io_output_payload_size;
@@ -10809,14 +10813,14 @@ module Axi4SharedArbiter_1_ (
   wire [0:0] cmdArbiter_io_chosenOH;
   wire  streamFork_5__io_input_ready;
   wire  streamFork_5__io_outputs_0_valid;
-  wire [11:0] streamFork_5__io_outputs_0_payload_addr;
+  wire [10:0] streamFork_5__io_outputs_0_payload_addr;
   wire [3:0] streamFork_5__io_outputs_0_payload_id;
   wire [7:0] streamFork_5__io_outputs_0_payload_len;
   wire [2:0] streamFork_5__io_outputs_0_payload_size;
   wire [1:0] streamFork_5__io_outputs_0_payload_burst;
   wire  streamFork_5__io_outputs_0_payload_write;
   wire  streamFork_5__io_outputs_1_valid;
-  wire [11:0] streamFork_5__io_outputs_1_payload_addr;
+  wire [10:0] streamFork_5__io_outputs_1_payload_addr;
   wire [3:0] streamFork_5__io_outputs_1_payload_id;
   wire [7:0] streamFork_5__io_outputs_1_payload_len;
   wire [2:0] streamFork_5__io_outputs_1_payload_size;
@@ -10828,7 +10832,7 @@ module Axi4SharedArbiter_1_ (
   wire  _zz_4_;
   wire  inputsCmd_0_valid;
   wire  inputsCmd_0_ready;
-  wire [11:0] inputsCmd_0_payload_addr;
+  wire [10:0] inputsCmd_0_payload_addr;
   wire [3:0] inputsCmd_0_payload_id;
   wire [7:0] inputsCmd_0_payload_len;
   wire [2:0] inputsCmd_0_payload_size;
@@ -10836,7 +10840,7 @@ module Axi4SharedArbiter_1_ (
   wire  inputsCmd_0_payload_write;
   reg  streamFork_5__io_outputs_1_thrown_valid;
   wire  streamFork_5__io_outputs_1_thrown_ready;
-  wire [11:0] streamFork_5__io_outputs_1_thrown_payload_addr;
+  wire [10:0] streamFork_5__io_outputs_1_thrown_payload_addr;
   wire [3:0] streamFork_5__io_outputs_1_thrown_payload_id;
   wire [7:0] streamFork_5__io_outputs_1_thrown_payload_len;
   wire [2:0] streamFork_5__io_outputs_1_thrown_payload_size;
@@ -11651,7 +11655,7 @@ module ICCFPGA (
   wire [16:0] _zz_50_;
   wire [1:0] _zz_51_;
   wire  _zz_52_;
-  wire [11:0] _zz_53_;
+  wire [10:0] _zz_53_;
   wire [1:0] _zz_54_;
   wire  _zz_55_;
   wire [16:0] _zz_56_;
@@ -11851,7 +11855,7 @@ module ICCFPGA (
   wire [1:0] axi_svram_io_axi_arbiter_io_sharedInputs_0_r_payload_resp;
   wire  axi_svram_io_axi_arbiter_io_sharedInputs_0_r_payload_last;
   wire  axi_svram_io_axi_arbiter_io_output_arw_valid;
-  wire [11:0] axi_svram_io_axi_arbiter_io_output_arw_payload_addr;
+  wire [10:0] axi_svram_io_axi_arbiter_io_output_arw_payload_addr;
   wire [3:0] axi_svram_io_axi_arbiter_io_output_arw_payload_id;
   wire [7:0] axi_svram_io_axi_arbiter_io_output_arw_payload_len;
   wire [2:0] axi_svram_io_axi_arbiter_io_output_arw_payload_size;
@@ -12151,7 +12155,7 @@ module ICCFPGA (
   wire [3:0] _zz_28_;
   wire  axi_svram_io_axi_arbiter_io_output_arw_halfPipe_valid;
   wire  axi_svram_io_axi_arbiter_io_output_arw_halfPipe_ready;
-  wire [11:0] axi_svram_io_axi_arbiter_io_output_arw_halfPipe_payload_addr;
+  wire [10:0] axi_svram_io_axi_arbiter_io_output_arw_halfPipe_payload_addr;
   wire [3:0] axi_svram_io_axi_arbiter_io_output_arw_halfPipe_payload_id;
   wire [7:0] axi_svram_io_axi_arbiter_io_output_arw_halfPipe_payload_len;
   wire [2:0] axi_svram_io_axi_arbiter_io_output_arw_halfPipe_payload_size;
@@ -12159,7 +12163,7 @@ module ICCFPGA (
   wire  axi_svram_io_axi_arbiter_io_output_arw_halfPipe_payload_write;
   reg  axi_svram_io_axi_arbiter_io_output_arw_halfPipe_regs_valid;
   reg  axi_svram_io_axi_arbiter_io_output_arw_halfPipe_regs_ready;
-  reg [11:0] axi_svram_io_axi_arbiter_io_output_arw_halfPipe_regs_payload_addr;
+  reg [10:0] axi_svram_io_axi_arbiter_io_output_arw_halfPipe_regs_payload_addr;
   reg [3:0] axi_svram_io_axi_arbiter_io_output_arw_halfPipe_regs_payload_id;
   reg [7:0] axi_svram_io_axi_arbiter_io_output_arw_halfPipe_regs_payload_len;
   reg [2:0] axi_svram_io_axi_arbiter_io_output_arw_halfPipe_regs_payload_size;
@@ -13044,7 +13048,7 @@ module ICCFPGA (
   assign axi_ram_io_axi_arbiter_io_output_w_s2mPipe_m2sPipe_payload_strb = axi_ram_io_axi_arbiter_io_output_w_s2mPipe_m2sPipe_rData_strb;
   assign axi_ram_io_axi_arbiter_io_output_w_s2mPipe_m2sPipe_payload_last = axi_ram_io_axi_arbiter_io_output_w_s2mPipe_m2sPipe_rData_last;
   assign axi_ram_io_axi_arbiter_io_output_w_s2mPipe_m2sPipe_ready = axi_ram_io_axi_w_ready;
-  assign _zz_53_ = axi_core_dBus_decoder_io_sharedOutputs_0_arw_payload_addr[11:0];
+  assign _zz_53_ = axi_core_dBus_decoder_io_sharedOutputs_0_arw_payload_addr[10:0];
   assign _zz_28_[3 : 0] = (4'b0000);
   assign _zz_54_ = (2'b01);
   assign axi_svram_io_axi_arbiter_io_output_arw_halfPipe_valid = axi_svram_io_axi_arbiter_io_output_arw_halfPipe_regs_valid;
