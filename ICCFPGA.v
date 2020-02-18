@@ -1,5 +1,5 @@
-// Generator : SpinalHDL v1.3.7    git head : ab01baba5edd0c50f7332eea31fb9d4f8739dede
-// Date      : 10/02/2020, 08:19:22
+// Generator : SpinalHDL v1.3.7    git head : 25c94c612dbcd067ba1c116c53f11dc0ab6c3604
+// Date      : 18/02/2020, 09:42:05
 // Component : ICCFPGA
 
 
@@ -8427,6 +8427,16 @@ module VexRiscv (
       12'b001101000001 : begin
         execute_CsrPlugin_illegalAccess = 1'b0;
       end
+      12'b101100000000 : begin
+        if(execute_CSR_READ_OPCODE)begin
+          execute_CsrPlugin_illegalAccess = 1'b0;
+        end
+      end
+      12'b101110000000 : begin
+        if(execute_CSR_READ_OPCODE)begin
+          execute_CsrPlugin_illegalAccess = 1'b0;
+        end
+      end
       12'b001101000100 : begin
         execute_CsrPlugin_illegalAccess = 1'b0;
       end
@@ -8528,6 +8538,12 @@ module VexRiscv (
       end
       12'b001101000001 : begin
         execute_CsrPlugin_readData[31 : 0] = CsrPlugin_mepc;
+      end
+      12'b101100000000 : begin
+        execute_CsrPlugin_readData[31 : 0] = CsrPlugin_mcycle[31 : 0];
+      end
+      12'b101110000000 : begin
+        execute_CsrPlugin_readData[31 : 0] = CsrPlugin_mcycle[63 : 32];
       end
       12'b001101000100 : begin
         execute_CsrPlugin_readData[11 : 11] = CsrPlugin_mip_MEIP;
@@ -8994,6 +9010,10 @@ module VexRiscv (
         end
         12'b001101000001 : begin
         end
+        12'b101100000000 : begin
+        end
+        12'b101110000000 : begin
+        end
         12'b001101000100 : begin
         end
         12'b001110110010 : begin
@@ -9359,6 +9379,10 @@ module VexRiscv (
         if(execute_CsrPlugin_writeEnable)begin
           CsrPlugin_mepc <= execute_CsrPlugin_writeData[31 : 0];
         end
+      end
+      12'b101100000000 : begin
+      end
+      12'b101110000000 : begin
       end
       12'b001101000100 : begin
         if(execute_CsrPlugin_writeEnable)begin
